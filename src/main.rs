@@ -1,15 +1,20 @@
-use std::env;
-
 use dotenv::dotenv;
 use reqwest;
-use serde::Deserialize;
+use semver;
+use serde::{de, Deserialize};
 use serde_json;
+use std::{env, fmt};
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
 enum Version {
-    VersionUpdate { from: String, to: String },
-    StableVersion { stable: String },
+    VersionUpdate {
+        from: semver::Version,
+        to: semver::Version,
+    },
+    StableVersion {
+        stable: semver::Version,
+    },
 }
 #[derive(Deserialize)]
 struct AvailableVersions {
@@ -39,8 +44,41 @@ fn get_available_versions() -> Result<AvailableVersions, reqwest::Error> {
     Ok(versions)
 }
 
+fn find_latest_stable(versions: &Vec<Version>) -> Option<&semver::Version> {
+    for version in versions {
+        match version {
+            Version::StableVersion { stable } => return Some(stable),
+            _ => continue,
+        }
+    }
+    None
+}
+
+fn find_latest_experimental(versions: Vec<Version>) -> semver::Version {
+    let mut latest_experimental = semver::Version::new(0, 0, 0);
+    for version in versions {
+        match version {
+            Version::VersionUpdate { from, to } => {
+                if to > latest_experimental {
+                    latest_experimental = to;
+                }
+            }
+            _ => continue,
+        }
+    }
+    latest_experimental
+}
+
 fn main() {
     dotenv().ok();
     let versions = get_available_versions().unwrap();
     println!("{:?}", versions.core_linux32);
+    println!(
+        "{:?}",
+        find_latest_stable(&versions.core_linux_headless64).unwrap()
+    );
+    println!(
+        "{:?}",
+        find_latest_experimental(versions.core_linux_headless64.clone())
+    );
 }

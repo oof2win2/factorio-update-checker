@@ -81,6 +81,7 @@ version = "0.1.0"
 dependencies = [
  "dotenv",
  "reqwest",
+ "semver",
  "serde",
  "serde_json",
 ]
@@ -585,6 +586,15 @@ checksum = "0160a13a177a45bfb43ce71c01580998474f556ad854dcbca936dd2841a5c556"
 dependencies = [
  "core-foundation-sys",
  "libc",
+]
+
+[[package]]
+name = "semver"
+version = "1.0.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e25dfac463d778e353db5be2449d1cce89bd6fd23c9f1ea21310ce6e5a1b29c4"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
